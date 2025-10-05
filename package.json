@@ -1,0 +1,32 @@
+{
+  "name": "solaris-platform",
+  "version": "1.0.0",
+  "description": "Plataforma de análise climática e predição de ilhas de calor urbano",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
+    "dev:client": "cd client && npm start",
+    "dev:server": "cd server && npm run dev",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "cd client && npm run build",
+    "build:server": "cd server && npm run build",
+    "build:api": "cd api && npm install",
+    "build:all": "npm run build:client && npm run build:server && npm run build:api",
+    "install-all": "npm install && cd client && npm install && cd ../server && npm install && cd ../api && npm install",
+    "start": "cd server && npm start",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "climate",
+    "analysis",
+    "heat-island",
+    "satellite-data",
+    "prediction",
+    "urban-planning"
+  ],
+  "author": "SOLARIS Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
