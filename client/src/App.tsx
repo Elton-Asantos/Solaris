@@ -1,112 +1,169 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
-import { Toaster } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
-import { ThemeProvider } from './context/ThemeContext';
-import { ClimateDataProvider } from './context/ClimateDataContext';
+import styled from 'styled-components';
 import Header from './components/Header';
 import MapContainer from './components/MapContainer';
+import MapDebug from './components/MapDebug';
+import MapboxMap from './components/MapboxMap';
+import GoogleMapComponent from './components/GoogleMapComponent';
+// MapDiagnostics removido para economizar espaço
+import MapForceVisible from './components/MapForceVisible';
+import ControlPanel from './components/ControlPanel';
+import DataTable from './components/DataTable';
+import LoadingSpinner from './components/LoadingSpinner';
 import ResponsiveLayout from './components/ResponsiveLayout';
 import DataAnalysisModal from './components/DataAnalysisModal';
-import LoadingSpinner from './components/LoadingSpinner';
+import { ClimateDataProvider } from './context/ClimateDataContext';
+import { ThemeProvider } from './context/ThemeContext';
+import { configureLeafletIcons } from './utils/leafletConfig';
+
+// Configurar ícones do Leaflet uma vez na inicialização
+configureLeafletIcons();
+
+// 🗺️ ESCOLHA A BIBLIOTECA DE MAPA:
+// 'leaflet-debug'  → Leaflet puro com logs de debug (MAIS SIMPLES) ✅ TESTE
+// 'leaflet-react'  → React-Leaflet original (padrão)
+// 'mapbox'         → Mapbox GL JS (MAIS BONITO, requer token)
+// 'google'         → Google Maps (INTEGRAÇÃO GEE, requer API key)
+type MapLibrary = 'leaflet-debug' | 'leaflet-react' | 'mapbox' | 'google';
+const MAP_LIBRARY: MapLibrary = 'google' as MapLibrary;
 
 const AppContainer = styled.div`
-  min-height: 100vh;
-  background-color: var(--background-color);
-  color: var(--text-color);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--background-color);
+  overflow: hidden;
 `;
 
 const MainContent = styled.div`
   display: flex;
-  height: calc(100vh - 60px);
-  position: relative;
+  flex: 1;
+  overflow: hidden;
+  gap: 0;
+  min-height: 0;
+  flex-direction: row;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
 `;
 
 const MapSection = styled.div`
   flex: 1;
   position: relative;
+  background: var(--card-background);
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  
+  /* Desktop grande (> 1200px) */
+  @media (min-width: 1201px) {
+    min-width: 600px;
+  }
+  
+  /* Desktop médio (769px - 1200px) */
+  @media (min-width: 769px) and (max-width: 1200px) {
+    min-width: 400px;
+  }
+  
+  /* Tablet (481px - 768px) */
+  @media (min-width: 481px) and (max-width: 768px) {
+    min-height: 500px;
+    height: 500px;
+    flex: 0 0 500px;
+  }
+  
+  /* Mobile (< 480px) */
+  @media (max-width: 480px) {
+    min-height: 400px;
+    height: 400px;
+    flex: 0 0 400px;
+  }
 `;
 
-function App() {
-  const [selectedArea, setSelectedArea] = useState(null);
+const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [isDataModalOpen, setIsDataModalOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [selectionMode, setSelectionMode] = useState(null);
+  const [selectedArea, setSelectedArea] = useState<{
+    bounds: any;
+    name: string;
+  } | null>(null);
+  const [isDataModalOpen, setIsDataModalOpen] = useState(false);
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+      setIsMobile(window.innerWidth <= 768);
     };
     
     checkMobile();
     window.addEventListener('resize', checkMobile);
+    
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const sidebar = selectedArea ? (
-    <ResponsiveLayout
-      isMobile={isMobile}
-      sidebar={
-        <div style={{ padding: '20px' }}>
-          <h3>Área Selecionada</h3>
-          <p><strong>Nome:</strong> {selectedArea.name}</p>
-          <p><strong>Tipo:</strong> {selectedArea.selectionType || 'retângulo'}</p>
-          {selectedArea.selectionType === 'circle' && selectedArea.circleParams && (
-            <p><strong>Raio:</strong> {selectedArea.circleParams.radiusKm.toFixed(2)} km</p>
-          )}
-          <button 
-            onClick={() => setIsDataModalOpen(true)}
-            style={{
-              background: 'var(--primary-color)',
-              color: 'white',
-              border: 'none',
-              padding: '10px 20px',
-              borderRadius: '5px',
-              cursor: 'pointer',
-              marginTop: '10px'
-            }}
-          >
-            Analisar Área
-          </button>
-        </div>
-      }
-    />
-  ) : null;
+  const sidebar = (
+    <>
+      <ControlPanel 
+        selectedArea={selectedArea}
+        onLoadingChange={setIsLoading}
+        onOpenDataAnalysis={() => setIsDataModalOpen(true)}
+      />
+      <DataTable selectedArea={selectedArea} />
+    </>
+  );
 
   return (
     <ThemeProvider>
       <ClimateDataProvider>
         <AppContainer>
-          <Header selectionMode={selectionMode} />
+          <Header />
           <MainContent>
             <MapSection>
-              <MapContainer 
-                onAreaSelect={setSelectedArea}
-                selectedArea={selectedArea}
-                onSelectionModeChange={setSelectionMode}
-              />
-              {isLoading && <LoadingSpinner />}
+              {/* Google Maps - Ocupa todo espaço à esquerda */}
+              <MapForceVisible />
             </MapSection>
-            <ResponsiveLayout
-              isMobile={isMobile}
-              sidebar={sidebar}
-            >
-              <div style={{ flex: 1 }} />
-            </ResponsiveLayout>
-          </MainContent>
-          <Toaster 
-            position="top-right"
-            toastOptions={{
-              duration: 4000,
-              style: {
+            
+            {/* Sidebar - Renderizada diretamente (sem ResponsiveLayout wrapper) */}
+            {isMobile ? (
+              <ResponsiveLayout 
+                isMobile={isMobile}
+                sidebar={sidebar}
+              >
+                <></>
+              </ResponsiveLayout>
+            ) : (
+              <div style={{ 
+                width: '420px', 
+                minWidth: '420px', 
+                maxWidth: '420px',
+                height: '100%',
                 background: 'var(--card-background)',
-                color: 'var(--text-color)',
-                borderRadius: '8px',
-                border: '1px solid var(--border-color)',
-              },
-            }}
+                borderLeft: '1px solid var(--border-color)',
+                overflowY: 'auto',
+                flexShrink: 0
+              }}>
+                {sidebar}
+              </div>
+            )}
+          </MainContent>
+          <ToastContainer 
+            position="top-right"
+            autoClose={4000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
           />
           
           <DataAnalysisModal
@@ -118,6 +175,6 @@ function App() {
       </ClimateDataProvider>
     </ThemeProvider>
   );
-}
+};
 
 export default App;

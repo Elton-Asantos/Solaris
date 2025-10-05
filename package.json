@@ -1,32 +1,45 @@
 {
   "name": "solaris-platform",
   "version": "1.0.0",
-  "description": "Plataforma de análise climática e predição de ilhas de calor urbano",
+  "description": "SOLARIS - Plataforma de IA climática para mapeamento e previsão de ilhas de calor urbanas",
   "main": "index.js",
   "scripts": {
-    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
-    "dev:client": "cd client && npm start",
-    "dev:server": "cd server && npm run dev",
-    "build": "npm run build:client && npm run build:server",
-    "build:client": "cd client && npm run build",
-    "build:server": "cd server && npm run build",
-    "build:api": "cd api && npm install",
-    "build:all": "npm run build:client && npm run build:server && npm run build:api",
-    "install-all": "npm install && cd client && npm install && cd ../server && npm install && cd ../api && npm install",
-    "start": "cd server && npm start",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
+    "dev:frontend": "cd client && npm start",
+    "install:all": "cd backend && pip install -r requirements.txt && cd ../client && npm install",
+    "build:frontend": "cd client && npm run build",
+    "start:backend": "cd backend && python -m uvicorn app.main:app --host 0.0.0.0 --port 8000",
+    "start:frontend": "cd client && npm start",
+    "test:backend": "cd backend && pytest",
+    "test:frontend": "cd client && npm test",
+    "lint:backend": "cd backend && flake8 app/",
+    "lint:frontend": "cd client && npm run lint",
+    "setup:gee": "earthengine authenticate"
   },
   "keywords": [
     "climate",
-    "analysis",
     "heat-island",
     "satellite-data",
+    "google-earth-engine",
     "prediction",
-    "urban-planning"
+    "ai",
+    "urban-planning",
+    "fastapi",
+    "react",
+    "typescript"
   ],
   "author": "SOLARIS Team",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/solaris-team/solaris"
+  },
   "devDependencies": {
     "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "python": ">=3.11.0"
   }
 }
