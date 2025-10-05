@@ -1,0 +1,68 @@
+:root {
+  /* Tema Escuro (Padrão) */
+  --background-color: #1a1a1a;
+  --card-background: #2c2c2c;
+  --text-color: #e0e0e0;
+  --primary-color: #ff8c00; /* Dark Orange */
+  --header-color: #ffffff;
+  --border-color: #444444;
+  --font-family: 'Inter', sans-serif;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+
+  --color-min: #ffff00; /* Yellow */
+  --color-mid: #ff8c00; /* Orange */
+  --color-max: #ff4500; /* OrangeRed */
+}
+
+/* Tema Claro */
+.light-theme {
+  --background-color: #f8fafc;
+  --card-background: #ffffff;
+  --text-color: #1e293b;
+  --primary-color: #ff8c00; /* Mantém a cor laranja */
+  --header-color: #0f172a;
+  --border-color: #e2e8f0;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+  --color-min: #fbbf24; /* Amarelo mais suave */
+  --color-mid: #ff8c00; /* Orange */
+  --color-max: #dc2626; /* Vermelho mais suave */
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--background-color);
+  color: var(--text-color);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Scrollbar personalizada */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--card-background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-color);
+}
