@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { Calendar, Download, Play, Filter, Settings, Thermometer, Droplets, Sun, TreePine, Building, Users } from 'lucide-react';
+import { Calendar, Download, Play, Filter, Settings, Thermometer, Droplets, Sun, TreePine, Building, Users, BarChart2 } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import { useClimateData } from '../context/ClimateDataContext';
+import DataTableModal from './DataTableModal';
 import 'react-datepicker/dist/react-datepicker.css';
 
 interface ControlPanelProps {
@@ -329,11 +330,12 @@ const VARIABLES = [
 ];
 
 const ControlPanel: React.FC<ControlPanelProps> = ({ selectedArea, onLoadingChange, onOpenDataAnalysis }) => {
-  const { fetchSatelliteData, downloadData, isLoading } = useClimateData();
+  const { fetchSatelliteData, downloadData, isLoading, climateData } = useClimateData();
   const [startDate, setStartDate] = useState<Date>(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
   const [endDate, setEndDate] = useState<Date>(new Date());
   const [selectedVariables, setSelectedVariables] = useState<string[]>(['lst', 'ndvi']);
   const [filters, setFilters] = useState<{ [key: string]: { min: string; max: string } }>({});
+  const [isDataModalOpen, setIsDataModalOpen] = useState(false);
 
   useEffect(() => {
     onLoadingChange(isLoading);
@@ -384,7 +386,18 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ selectedArea, onLoadingChan
       return;
     }
 
-    await fetchSatelliteData(selectedArea);
+    // ✅ Converter IDs para formato esperado pelo backend (uppercase)
+    const variablesUpperCase = selectedVariables.map(v => v.toUpperCase());
+    
+    console.log('📊 Variáveis selecionadas:', variablesUpperCase);
+
+    // Passar variáveis selecionadas, datas e área
+    await fetchSatelliteData(
+      selectedArea,
+      variablesUpperCase,
+      startDate.toISOString().split('T')[0],
+      endDate.toISOString().split('T')[0]
+    );
   };
 
   const handleDownload = async (format: string) => {
@@ -541,14 +554,28 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ selectedArea, onLoadingChan
       )}
 
       <Section>
-        <ActionButton
-          $variant="primary"
-          onClick={handleAnalyze}
-          disabled={!selectedArea || selectedVariables.length === 0 || isLoading}
-        >
-          <Play size={20} />
-          {isLoading ? 'Analisando...' : 'Analisar Área'}
-        </ActionButton>
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+          <ActionButton
+            $variant="primary"
+            onClick={handleAnalyze}
+            disabled={!selectedArea || selectedVariables.length === 0 || isLoading}
+            style={{ flex: 1, minWidth: '200px' }}
+          >
+            <Play size={20} />
+            {isLoading ? 'Analisando...' : 'Analisar Área'}
+          </ActionButton>
+          
+          {climateData && (
+            <ActionButton
+              $variant="secondary"
+              onClick={() => setIsDataModalOpen(true)}
+              style={{ flex: 1, minWidth: '180px' }}
+            >
+              <BarChart2 size={20} />
+              Ver Análise
+            </ActionButton>
+          )}
+        </div>
       </Section>
 
       <DownloadSection>
@@ -573,6 +600,12 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ selectedArea, onLoadingChan
           </ActionButton>
         </DownloadButtons>
       </DownloadSection>
+      
+      {/* Modal de Dados */}
+      <DataTableModal 
+        isOpen={isDataModalOpen}
+        onClose={() => setIsDataModalOpen(false)}
+      />
     </PanelContainer>
   );
 };

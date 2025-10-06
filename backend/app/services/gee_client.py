@@ -231,11 +231,34 @@ def generate_mock_data(variable: str, geometry) -> Dict:
     
     min_val, max_val = ranges.get(variable, (0, 100))
     
-    # Gerar 50 pontos mockados
+    # Obter bounds da geometria para gerar pontos dentro dela
+    try:
+        bounds = geometry.bounds().getInfo()
+        coordinates = bounds['coordinates'][0]
+        
+        # Calcular centro e tamanho aproximado
+        lngs = [coord[0] for coord in coordinates]
+        lats = [coord[1] for coord in coordinates]
+        
+        center_lat = sum(lats) / len(lats)
+        center_lng = sum(lngs) / len(lngs)
+        
+        # Raio máximo (metade da distância entre pontos extremos)
+        delta_lat = (max(lats) - min(lats)) / 2
+        delta_lng = (max(lngs) - min(lngs)) / 2
+        
+    except:
+        # Fallback: usar coordenadas de Brasília
+        center_lat = -15.7801
+        center_lng = -47.9292
+        delta_lat = 0.05
+        delta_lng = 0.05
+    
+    # Gerar 50 pontos mockados dentro da geometria
     features = []
     for i in range(50):
-        lat = -15.7801 + (random.random() - 0.5) * 0.1
-        lng = -47.9292 + (random.random() - 0.5) * 0.1
+        lat = center_lat + (random.random() - 0.5) * delta_lat * 2
+        lng = center_lng + (random.random() - 0.5) * delta_lng * 2
         value = random.uniform(min_val, max_val)
         
         features.append({
@@ -249,7 +272,7 @@ def generate_mock_data(variable: str, geometry) -> Dict:
             }
         })
     
-    logger.info(f"📊 Gerando {len(features)} pontos mockados para {variable}")
+    logger.info(f"📊 Gerando {len(features)} pontos mockados para {variable} em ({center_lat:.4f}, {center_lng:.4f})")
     
     return {
         "variable": variable,

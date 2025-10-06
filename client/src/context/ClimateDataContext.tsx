@@ -86,14 +86,19 @@ export const ClimateDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
       return;
     }
 
+    // 🗑️ LIMPAR DADOS ANTERIORES ANTES DE NOVA ANÁLISE
+    setClimateData(null);
+    setRegionStats(null);
+    
     setIsLoading(true);
     
     try {
       console.log('🛰️ Buscando dados do Google Earth Engine...');
       console.log('📍 Área selecionada:', selectedArea);
+      console.log('🔍 Variáveis solicitadas:', variables);
       
-      // Definir variáveis padrão
-      const requestVariables = variables || ['LST', 'NDVI', 'NDBI', 'NDWI'];
+      // ⚠️ NÃO usar variáveis padrão se nenhuma for fornecida
+      const requestVariables = variables || [];
       
       // Definir datas padrão (últimos 30 dias)
       const defaultStartDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
