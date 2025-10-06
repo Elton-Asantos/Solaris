@@ -67,19 +67,150 @@ const Label = styled.label`
   color: var(--text-color);
 `;
 
-// const DateInput = styled(DatePicker)`
-//   padding: 8px 12px;
-//   border: 1px solid var(--border-color);
-//   border-radius: 6px;
-//   background: var(--card-background);
-//   color: var(--text-color);
-//   font-size: 0.875rem;
-//   
-//   &:focus {
-//     outline: none;
-//     border-color: var(--primary-color);
-//   }
-// `;
+const DatePickerWrapper = styled.div`
+  position: relative;
+  width: 100%;
+
+  /* Estilização do input do DatePicker */
+  .react-datepicker-wrapper {
+    width: 100%;
+  }
+
+  .react-datepicker__input-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    position: relative;
+
+    /* Ícone de calendário */
+    &::before {
+      content: '📅';
+      position: absolute;
+      left: 12px;
+      font-size: 16px;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px 12px 10px 38px;
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--card-background);
+      color: var(--text-color);
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      box-sizing: border-box;
+
+      &:hover {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      &:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+      }
+
+      &::placeholder {
+        color: var(--text-muted);
+        opacity: 0.6;
+      }
+    }
+  }
+
+  /* Estilização do calendário popup */
+  .react-datepicker {
+    font-family: inherit;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    background: var(--card-background);
+    overflow: hidden;
+  }
+
+  .react-datepicker__header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-bottom: none;
+    padding-top: 12px;
+  }
+
+  .react-datepicker__current-month,
+  .react-datepicker__day-name {
+    color: white;
+    font-weight: 600;
+  }
+
+  .react-datepicker__day {
+    color: var(--text-color);
+    font-weight: 500;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: var(--primary-color);
+      color: white;
+    }
+  }
+
+  .react-datepicker__day--selected,
+  .react-datepicker__day--keyboard-selected {
+    background: var(--primary-color);
+    color: white;
+    font-weight: 700;
+  }
+
+  .react-datepicker__day--today {
+    font-weight: 700;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+  }
+
+  .react-datepicker__day--disabled {
+    color: var(--text-muted);
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .react-datepicker__navigation {
+    top: 12px;
+  }
+
+  .react-datepicker__navigation-icon::before {
+    border-color: white;
+  }
+
+  /* Dropdowns de mês e ano */
+  .react-datepicker__month-dropdown,
+  .react-datepicker__year-dropdown {
+    background: var(--card-background);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .react-datepicker__month-option,
+  .react-datepicker__year-option {
+    color: var(--text-color);
+    padding: 8px 12px;
+
+    &:hover {
+      background: var(--primary-color);
+      color: white;
+    }
+  }
+
+  .react-datepicker__month-option--selected,
+  .react-datepicker__year-option--selected {
+    background: var(--primary-color);
+    color: white;
+    font-weight: 700;
+  }
+`;
 
 const VariableGrid = styled.div`
   display: grid;
@@ -452,33 +583,37 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ selectedArea, onLoadingChan
         <DateRangeContainer>
           <FormGroup>
             <Label>Data Inicial</Label>
-            <DatePicker
-              selected={startDate}
-              onChange={(date: Date | null) => {
-                if (date) setStartDate(date);
-              }}
-              dateFormat="dd/MM/yyyy"
-              maxDate={endDate}
-              placeholderText="Selecione a data inicial"
-              showYearDropdown
-              showMonthDropdown
-              dropdownMode="select"
-            />
+            <DatePickerWrapper>
+              <DatePicker
+                selected={startDate}
+                onChange={(date: Date | null) => {
+                  if (date) setStartDate(date);
+                }}
+                dateFormat="dd/MM/yyyy"
+                maxDate={endDate}
+                placeholderText="Selecione a data inicial"
+                showYearDropdown
+                showMonthDropdown
+                dropdownMode="select"
+              />
+            </DatePickerWrapper>
           </FormGroup>
           <FormGroup>
             <Label>Data Final</Label>
-            <DatePicker
-              selected={endDate}
-              onChange={(date: Date | null) => {
-                if (date) setEndDate(date);
-              }}
-              dateFormat="dd/MM/yyyy"
-              maxDate={new Date()}
-              placeholderText="Selecione a data final"
-              showYearDropdown
-              showMonthDropdown
-              dropdownMode="select"
-            />
+            <DatePickerWrapper>
+              <DatePicker
+                selected={endDate}
+                onChange={(date: Date | null) => {
+                  if (date) setEndDate(date);
+                }}
+                dateFormat="dd/MM/yyyy"
+                maxDate={new Date()}
+                placeholderText="Selecione a data final"
+                showYearDropdown
+                showMonthDropdown
+                dropdownMode="select"
+              />
+            </DatePickerWrapper>
           </FormGroup>
         </DateRangeContainer>
       </Section>
