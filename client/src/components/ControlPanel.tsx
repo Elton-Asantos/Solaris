@@ -18,12 +18,13 @@ const PanelContainer = styled.div`
   border-radius: 12px;
   padding: 20px;
   box-shadow: var(--shadow);
-  height: fit-content;
-  max-height: calc(100vh - 200px);
+  height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
   width: 100%;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
   
   @media (max-width: 480px) {
     padding: 16px;

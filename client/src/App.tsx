@@ -10,7 +10,6 @@ import GoogleMapComponent from './components/GoogleMapComponent';
 // MapDiagnostics removido para economizar espaço
 import MapForceVisible from './components/MapForceVisible';
 import ControlPanel from './components/ControlPanel';
-import DataTable from './components/DataTable';
 import LoadingSpinner from './components/LoadingSpinner';
 import ResponsiveLayout from './components/ResponsiveLayout';
 import DataAnalysisModal from './components/DataAnalysisModal';
@@ -110,14 +109,11 @@ const App: React.FC = () => {
   }, []);
 
   const sidebar = (
-    <>
-      <ControlPanel 
-        selectedArea={selectedArea}
-        onLoadingChange={setIsLoading}
-        onOpenDataAnalysis={() => setIsDataModalOpen(true)}
-      />
-      <DataTable selectedArea={selectedArea} />
-    </>
+    <ControlPanel 
+      selectedArea={selectedArea}
+      onLoadingChange={setIsLoading}
+      onOpenDataAnalysis={() => setIsDataModalOpen(true)}
+    />
   );
 
   return (
