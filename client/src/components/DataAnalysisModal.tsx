@@ -164,6 +164,52 @@ const PredictionSubtext = styled.div`
   opacity: 0.8;
 `;
 
+const TabContainer = styled.div`
+  display: flex;
+  gap: 8px;
+  border-bottom: 2px solid var(--border-color);
+  margin-bottom: 1.5rem;
+`;
+
+const Tab = styled.button<{ $active: boolean }>`
+  background: ${props => props.$active ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'transparent'};
+  color: ${props => props.$active ? 'white' : 'var(--text-color)'};
+  border: none;
+  padding: 12px 24px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 8px 8px 0 0;
+  transition: all 0.3s ease;
+  position: relative;
+  
+  &:hover {
+    background: ${props => props.$active 
+      ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
+      : 'var(--hover-background)'};
+    transform: translateY(-2px);
+  }
+  
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: ${props => props.$active ? '#667eea' : 'transparent'};
+  }
+`;
+
+const TabContent = styled.div`
+  animation: fadeIn 0.3s ease-in;
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+`;
+
 const StatHeader = styled.div`
   display: flex;
   align-items: center;
@@ -326,6 +372,7 @@ const DataAnalysisModal: React.FC<DataAnalysisModalProps> = ({ isOpen, onClose, 
   const { climateData, regionStats } = useClimateData();
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(50);
+  const [activeTab, setActiveTab] = useState<'data' | 'prediction'>('prediction');
 
   const allData = useMemo(() => {
     if (!climateData) return [];
@@ -391,25 +438,45 @@ const DataAnalysisModal: React.FC<DataAnalysisModalProps> = ({ isOpen, onClose, 
             </EmptyState>
           ) : (
             <>
-              {regionStats && (
-                <StatsGrid>
-                  {Object.entries(regionStats).map(([variable, stats]: [string, any]) => (
-                    <StatCard key={variable}>
-                      <StatHeader>
-                        <StatName>{variable.toUpperCase()}</StatName>
-                        <StatIcon trend="neutral">
-                          <Minus size={16} />
-                        </StatIcon>
-                      </StatHeader>
-                      <StatValue>{stats.mean.toFixed(2)}</StatValue>
-                      <StatRange>Min: {stats.min.toFixed(2)} | Max: {stats.max.toFixed(2)}</StatRange>
-                    </StatCard>
-                  ))}
-                </StatsGrid>
-              )}
+              {/* ABAS DE NAVEGAÇÃO */}
+              <TabContainer>
+                <Tab 
+                  $active={activeTab === 'prediction'} 
+                  onClick={() => setActiveTab('prediction')}
+                >
+                  🔮 Análise Preditiva
+                </Tab>
+                <Tab 
+                  $active={activeTab === 'data'} 
+                  onClick={() => setActiveTab('data')}
+                >
+                  📊 Dados Detalhados
+                </Tab>
+              </TabContainer>
 
-              {/* SEÇÃO DE ANÁLISE PREDITIVA */}
-              {regionStats && regionStats.LST && (
+              {/* CONTEÚDO DA ABA ANÁLISE PREDITIVA */}
+              {activeTab === 'prediction' && (
+                <TabContent>
+                  {/* Estatísticas Gerais */}
+                  {regionStats && (
+                    <StatsGrid>
+                      {Object.entries(regionStats).map(([variable, stats]: [string, any]) => (
+                        <StatCard key={variable}>
+                          <StatHeader>
+                            <StatName>{variable.toUpperCase()}</StatName>
+                            <StatIcon trend="neutral">
+                              <Minus size={16} />
+                            </StatIcon>
+                          </StatHeader>
+                          <StatValue>{stats.mean.toFixed(2)}</StatValue>
+                          <StatRange>Min: {stats.min.toFixed(2)} | Max: {stats.max.toFixed(2)}</StatRange>
+                        </StatCard>
+                      ))}
+                    </StatsGrid>
+                  )}
+
+                  {/* Dashboard de Análise Preditiva */}
+                  {regionStats && regionStats.LST && (
                 <PredictionSection>
                   <PredictionHeader>
                     🔮 Análise Preditiva - Ilha de Calor
@@ -467,8 +534,13 @@ const DataAnalysisModal: React.FC<DataAnalysisModalProps> = ({ isOpen, onClose, 
                     </PredictionCard>
                   </PredictionContent>
                 </PredictionSection>
+                  )}
+                </TabContent>
               )}
 
+              {/* CONTEÚDO DA ABA DADOS DETALHADOS */}
+              {activeTab === 'data' && (
+                <TabContent>
               <TableControls>
                 <div>
                   <h3 style={{ margin: 0, color: 'var(--text-color)' }}>
@@ -529,6 +601,8 @@ const DataAnalysisModal: React.FC<DataAnalysisModalProps> = ({ isOpen, onClose, 
                     </PaginationButton>
                   </PaginationControls>
                 </Pagination>
+              )}
+                </TabContent>
               )}
             </>
           )}
