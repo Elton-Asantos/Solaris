@@ -466,7 +466,6 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ selectedArea, onLoadingChan
   const [endDate, setEndDate] = useState<Date>(new Date());
   const [selectedVariables, setSelectedVariables] = useState<string[]>(['lst', 'ndvi']);
   const [filters, setFilters] = useState<{ [key: string]: { min: string; max: string } }>({});
-  const [isDataModalOpen, setIsDataModalOpen] = useState(false);
 
   useEffect(() => {
     onLoadingChange(isLoading);
@@ -700,10 +699,10 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ selectedArea, onLoadingChan
             {isLoading ? 'Analisando...' : 'Analisar Área'}
           </ActionButton>
           
-          {climateData && (
+          {climateData && onOpenDataAnalysis && (
             <ActionButton
               $variant="secondary"
-              onClick={() => setIsDataModalOpen(true)}
+              onClick={onOpenDataAnalysis}
               style={{ flex: 1, minWidth: '180px' }}
             >
               <BarChart2 size={20} />
@@ -735,12 +734,6 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ selectedArea, onLoadingChan
           </ActionButton>
         </DownloadButtons>
       </DownloadSection>
-      
-      {/* Modal de Dados */}
-      <DataTableModal 
-        isOpen={isDataModalOpen}
-        onClose={() => setIsDataModalOpen(false)}
-      />
     </PanelContainer>
   );
 };
