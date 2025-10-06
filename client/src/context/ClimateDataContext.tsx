@@ -75,36 +75,110 @@ export const ClimateDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
     }
   }, []);
 
-  const fetchSatelliteData = useCallback(async (selectedArea: any) => {
+  const fetchSatelliteData = useCallback(async (
+    selectedArea: any,
+    variables?: string[],
+    startDate?: string,
+    endDate?: string
+  ) => {
     if (!selectedArea) {
       toast.error('Nenhuma área selecionada');
       return;
     }
 
     setIsLoading(true);
+    
     try {
-      // Nova API FastAPI na porta 8000
-      const response = await axios.post('http://localhost:8000/api/solaris/fetchData', {
-        bounds: selectedArea.bounds,
-        startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        endDate: new Date().toISOString().split('T')[0],
-        variables: ['LST', 'NDVI', 'NDBI', 'NDWI', 'POP_DENS', 'NIGHT_LIGHTS']
-      });
-
+      console.log('🛰️ Buscando dados do Google Earth Engine...');
+      console.log('📍 Área selecionada:', selectedArea);
+      
+      // Definir variáveis padrão
+      const requestVariables = variables || ['LST', 'NDVI', 'NDBI', 'NDWI'];
+      
+      // Definir datas padrão (últimos 30 dias)
+      const defaultStartDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      const defaultEndDate = new Date().toISOString().split('T')[0];
+      
+      // Preparar payload
+      const payload: any = {
+        variables: requestVariables,
+        startDate: startDate || defaultStartDate,
+        endDate: endDate || defaultEndDate
+      };
+      
+      // Adicionar coords ou bounds
+      if (selectedArea.center) {
+        // Área de círculo ou ponto
+        payload.coords = {
+          lat: selectedArea.center.lat,
+          lng: selectedArea.center.lng
+        };
+      } else if (selectedArea.bounds) {
+        // Área retangular
+        payload.bounds = selectedArea.bounds;
+      }
+      
+      console.log('📡 Enviando para backend:', payload);
+      
+      // Chamar API FastAPI
+      const response = await axios.post('http://localhost:8000/api/solaris/fetchData', payload);
+      
+      console.log('✅ Resposta recebida:', response.data);
+      
       if (response.data && response.data.data) {
-        // Converter nomes de variáveis para lowercase para manter compatibilidade
-        const data: any = {};
-        Object.keys(response.data.data).forEach(key => {
-          data[key.toLowerCase()] = response.data.data[key];
+        const geeData = response.data.data;
+        
+        // Processar dados e calcular estatísticas
+        const processedData: ClimateData = {};
+        const stats: RegionStats = {};
+        
+        Object.keys(geeData).forEach(variable => {
+          const varData = geeData[variable];
+          const features = varData.features?.features || [];
+          
+          // Converter GeoJSON para ClimateDataPoint[]
+          const points: ClimateDataPoint[] = features.map((f: any) => {
+            const coords = f.geometry?.coordinates || [0, 0];
+            const props = f.properties || {};
+            
+            return {
+              lat: coords[1],
+              lon: coords[0],
+              value: props[variable] || props.value || 0
+            };
+          });
+          
+          processedData[variable] = points;
+          
+          // Calcular estatísticas
+          if (points.length > 0) {
+            const values = points.map(p => p.value);
+            stats[variable] = {
+              min: Math.min(...values),
+              max: Math.max(...values),
+              mean: values.reduce((a, b) => a + b, 0) / values.length,
+              count: points.length
+            };
+          }
         });
         
-        setClimateData(data);
-        setRegionStats(response.data.regionStats || null);
-        toast.success('✨ Dados carregados via FastAPI + Google Earth Engine!');
+        setClimateData(processedData);
+        setRegionStats(stats);
+        
+        // Verificar se dados são mockados
+        const isMock = Object.values(geeData).some((v: any) => v.mock);
+        
+        if (isMock) {
+          toast.info(`📊 Dados mockados carregados (${Object.keys(processedData).length} variáveis)`);
+        } else {
+          toast.success(`✅ Dados do Google Earth Engine carregados!`);
+        }
+        
+        console.log('📊 Dados processados:', { processedData, stats });
       }
     } catch (error: any) {
-      console.error('Erro ao buscar dados de satélite:', error);
-      toast.error(error.response?.data?.detail || 'Erro ao buscar dados de satélite');
+      console.error('❌ Erro ao buscar dados:', error);
+      toast.error(error.response?.data?.detail || 'Erro ao buscar dados do satélite');
     } finally {
       setIsLoading(false);
     }
