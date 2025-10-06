@@ -128,7 +128,7 @@ const App: React.FC = () => {
           <MainContent>
             <MapSection>
               {/* Google Maps - Ocupa todo espaço à esquerda */}
-              <MapForceVisible />
+              <MapForceVisible onAreaSelected={setSelectedArea} />
             </MapSection>
             
             {/* Sidebar - Renderizada diretamente (sem ResponsiveLayout wrapper) */}

@@ -3,7 +3,11 @@ import { useClimateData } from '../context/ClimateDataContext';
 import HeatmapLayer from './HeatmapLayer';
 import MapLegend from './MapLegend';
 
-const MapForceVisible: React.FC = () => {
+interface MapForceVisibleProps {
+  onAreaSelected?: (area: { bounds: any; name: string } | null) => void;
+}
+
+const MapForceVisible: React.FC<MapForceVisibleProps> = ({ onAreaSelected }) => {
   const { climateData } = useClimateData();
   const mapRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -223,12 +227,21 @@ const MapForceVisible: React.FC = () => {
             addStatus(`   Centro: ${center.lat().toFixed(4)}, ${center.lng().toFixed(4)}`);
             addStatus(`   Raio: ${Math.round(radius)}m`);
             
-            // TODO: Enviar para o ControlPanel
-            console.log('CIRCLE DATA:', {
+            const areaData = {
               type: 'circle',
               center: { lat: center.lat(), lng: center.lng() },
               radius: radius,
-            });
+            };
+            
+            console.log('CIRCLE DATA:', areaData);
+            
+            // ✅ Enviar para o ControlPanel
+            if (onAreaSelected) {
+              onAreaSelected({
+                bounds: areaData,
+                name: `Círculo (${Math.round(radius)}m)`
+              });
+            }
           } else if (type === 'rectangle') {
             const bounds = shape.getBounds();
             const ne = bounds.getNorthEast();
@@ -236,7 +249,7 @@ const MapForceVisible: React.FC = () => {
             addStatus(`   NE: ${ne.lat().toFixed(4)}, ${ne.lng().toFixed(4)}`);
             addStatus(`   SW: ${sw.lat().toFixed(4)}, ${sw.lng().toFixed(4)}`);
             
-            console.log('RECTANGLE DATA:', {
+            const areaData = {
               type: 'rectangle',
               bounds: {
                 north: ne.lat(),
@@ -244,15 +257,35 @@ const MapForceVisible: React.FC = () => {
                 east: ne.lng(),
                 west: sw.lng(),
               },
-            });
+            };
+            
+            console.log('RECTANGLE DATA:', areaData);
+            
+            // ✅ Enviar para o ControlPanel
+            if (onAreaSelected) {
+              onAreaSelected({
+                bounds: areaData,
+                name: `Retângulo`
+              });
+            }
           } else if (type === 'marker') {
             const position = shape.getPosition();
             addStatus(`   Posição: ${position.lat().toFixed(4)}, ${position.lng().toFixed(4)}`);
             
-            console.log('MARKER DATA:', {
+            const areaData = {
               type: 'marker',
               position: { lat: position.lat(), lng: position.lng() },
-            });
+            };
+            
+            console.log('MARKER DATA:', areaData);
+            
+            // ✅ Enviar para o ControlPanel
+            if (onAreaSelected) {
+              onAreaSelected({
+                bounds: areaData,
+                name: `Ponto (${position.lat().toFixed(4)}, ${position.lng().toFixed(4)})`
+              });
+            }
           } else if (type === 'polygon') {
             const path = shape.getPath();
             const coordinates: any[] = [];
@@ -261,13 +294,23 @@ const MapForceVisible: React.FC = () => {
             });
             addStatus(`   Polígono com ${coordinates.length} pontos`);
             
-            console.log('POLYGON DATA:', {
+            const areaData = {
               type: 'polygon',
               coordinates: coordinates,
-            });
+            };
+            
+            console.log('POLYGON DATA:', areaData);
+            
+            // ✅ Enviar para o ControlPanel
+            if (onAreaSelected) {
+              onAreaSelected({
+                bounds: areaData,
+                name: `Polígono (${coordinates.length} pontos)`
+              });
+            }
           }
           
-          addStatus('💾 Coordenadas capturadas!');
+          addStatus('💾 Coordenadas capturadas e enviadas!');
         });
         
         addStatus('🎉 DESENHO HABILITADO!');
@@ -318,6 +361,11 @@ const MapForceVisible: React.FC = () => {
           
           // Resetar drawing mode
           drawingManager.setDrawingMode(null);
+          
+          // ✅ Limpar área selecionada no ControlPanel
+          if (onAreaSelected) {
+            onAreaSelected(null);
+          }
           
           addStatus('🗑️ Todos os desenhos foram removidos!');
           console.log('CLEARED: Todos os shapes foram removidos');

@@ -403,6 +403,33 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ selectedArea, onLoadingChan
 
   return (
     <PanelContainer>
+      {/* Área Selecionada - Indicador Visual */}
+      {selectedArea && (
+        <Section style={{ 
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+          color: 'white',
+          padding: '16px',
+          borderRadius: '8px',
+          marginBottom: '20px'
+        }}>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '8px',
+            fontWeight: 600,
+            marginBottom: '8px'
+          }}>
+            📍 Área Selecionada
+          </div>
+          <div style={{ 
+            fontSize: '14px', 
+            opacity: 0.95 
+          }}>
+            {selectedArea.name}
+          </div>
+        </Section>
+      )}
+      
       <Section>
         <SectionTitle>
           <Calendar size={20} />
