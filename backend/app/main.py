@@ -4,9 +4,10 @@ Plataforma de IA climática para mapeamento e previsão de ilhas de calor urbana
 """
 from fastapi import FastAPI, HTTPException, Body
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from typing import Dict, List, Optional
 import logging
+import io
 
 from app.services.gee_client import get_satellite_data, get_multiple_variables
 from app.services.ai_model import predict_heat_islands, calculate_vulnerability
@@ -167,7 +168,7 @@ async def predict_heat_islands_endpoint(params: Dict = Body(...)):
 @app.post("/api/solaris/export")
 async def export_data(params: Dict = Body(...)):
     """
-    Exportar dados em diferentes formatos
+    Exportar dados em diferentes formatos (CSV, JSON, PDF)
     
     Parâmetros:
     - data: Dados para exportar
@@ -182,25 +183,53 @@ async def export_data(params: Dict = Body(...)):
         if not data:
             raise HTTPException(status_code=400, detail="Forneça dados para exportar")
         
+        logger.info(f"📥 Exportando dados no formato: {export_format}")
+        
         if export_format == "csv":
             content = export_to_csv(data, filename)
             media_type = "text/csv"
+            
+            # Retornar como download de arquivo
+            return StreamingResponse(
+                io.StringIO(content),
+                media_type=media_type,
+                headers={
+                    "Content-Disposition": f"attachment; filename={filename}",
+                    "Access-Control-Expose-Headers": "Content-Disposition"
+                }
+            )
+            
         elif export_format == "json":
             content = export_to_json(data, filename)
             media_type = "application/json"
+            
+            return StreamingResponse(
+                io.StringIO(content),
+                media_type=media_type,
+                headers={
+                    "Content-Disposition": f"attachment; filename={filename}",
+                    "Access-Control-Expose-Headers": "Content-Disposition"
+                }
+            )
+            
         elif export_format == "pdf":
             content = export_to_pdf(data, filename)
             media_type = "application/pdf"
+            
+            return StreamingResponse(
+                io.BytesIO(content),
+                media_type=media_type,
+                headers={
+                    "Content-Disposition": f"attachment; filename={filename}",
+                    "Access-Control-Expose-Headers": "Content-Disposition"
+                }
+            )
+            
         else:
             raise HTTPException(status_code=400, detail="Formato não suportado. Use: csv, json ou pdf")
         
-        return JSONResponse(
-            content={"status": "ok", "filename": filename, "format": export_format},
-            media_type=media_type
-        )
-        
     except Exception as e:
-        logger.error(f"Erro ao exportar dados: {str(e)}")
+        logger.error(f"❌ Erro ao exportar dados: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Erro na exportação: {str(e)}")
 
 

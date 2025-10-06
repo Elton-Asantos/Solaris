@@ -229,42 +229,39 @@ export const ClimateDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
     }
     
     try {
-      // Nova API FastAPI para exportação
+      console.log(`📥 Iniciando download no formato: ${format}`);
+      
+      // Fazer requisição para o backend com responseType 'blob' para todos os formatos
       const response = await axios.post('http://localhost:8000/api/solaris/export', {
         data: climateData,
         format,
         filename: `${filename}.${format}`
       }, {
-        responseType: format === 'pdf' ? 'blob' : 'json'
+        responseType: 'blob' // Sempre usar 'blob' para receber arquivo
       });
 
-      if (format === 'pdf') {
-        const url = window.URL.createObjectURL(new Blob([response.data]));
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', `${filename}.${format}`);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        window.URL.revokeObjectURL(url);
-      } else {
-        // Para CSV e JSON, usar o conteúdo retornado pela API
-        const content = format === 'json' ? JSON.stringify(climateData, null, 2) : response.data;
-        const blob = new Blob([content], { type: format === 'json' ? 'application/json' : 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', `${filename}.${format}`);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        window.URL.revokeObjectURL(url);
-      }
+      // Criar URL do blob e fazer download
+      const blob = new Blob([response.data], { 
+        type: response.headers['content-type'] || 
+              (format === 'csv' ? 'text/csv' : 
+               format === 'json' ? 'application/json' : 
+               'application/pdf')
+      });
+      
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${filename}.${format}`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
 
-      toast.success(`📥 ${format.toUpperCase()} baixado com sucesso!`);
+      toast.success(`📥 Arquivo ${format.toUpperCase()} baixado com sucesso!`);
+      console.log(`✅ Download concluído: ${filename}.${format}`);
     } catch (error: any) {
-      console.error('Erro ao fazer download:', error);
-      toast.error(error.response?.data?.detail || 'Erro ao fazer download');
+      console.error('❌ Erro ao fazer download:', error);
+      toast.error(error.response?.data?.detail || 'Erro ao fazer download dos dados');
     }
   }, [climateData]);
 

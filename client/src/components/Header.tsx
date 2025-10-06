@@ -37,19 +37,17 @@ const Logo = styled.div`
   }
 `;
 
-const LogoIcon = styled.div`
-  width: 2rem;
-  height: 2rem;
-  background: linear-gradient(45deg, var(--primary-color), var(--color-max));
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: pulse 2s infinite;
+const LogoImage = styled.img`
+  height: 50px;
+  width: auto;
+  transition: transform 0.3s ease;
   
-  @keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.1); }
+  &:hover {
+    transform: scale(1.05);
+  }
+  
+  @media (max-width: 768px) {
+    height: 40px;
   }
 `;
 
@@ -142,10 +140,10 @@ const Header: React.FC<HeaderProps> = ({ onOpenDataAnalysis }) => {
   return (
     <HeaderContainer>
       <Logo>
-        <LogoIcon>
-          <Sun size={20} />
-        </LogoIcon>
-        SOLARIS
+        <LogoImage 
+          src={theme === 'dark' ? '/solaris-logo-dark.svg' : '/solaris-logo-light.svg'}
+          alt="SOLARIS Logo"
+        />
       </Logo>
       
       <NavItems>
