@@ -1,10 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useClimateData } from '../context/ClimateDataContext';
+import HeatmapLayer from './HeatmapLayer';
+import MapLegend from './MapLegend';
 
 const MapForceVisible: React.FC = () => {
+  const { climateData } = useClimateData();
   const mapRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const initializedRef = useRef(false);
   const [status, setStatus] = useState<string[]>([]);
+  const [activeVariable, setActiveVariable] = useState<string>('LST');
 
   const addStatus = (msg: string) => {
     console.log(`[MAP FORCE] ${msg}`);
@@ -44,7 +49,7 @@ const MapForceVisible: React.FC = () => {
         addStatus('3. Carregando Google Maps...');
         
         const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyB_pvDeDjx-zx9agq7BtgeNAmjGv8e33oQ&libraries=drawing,geometry`;
+        script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyB_pvDeDjx-zx9agq7BtgeNAmjGv8e33oQ&libraries=drawing,geometry,visualization`;
         script.async = true;
         
         script.onload = () => {
@@ -406,6 +411,18 @@ const MapForceVisible: React.FC = () => {
           margin: 0,
           padding: 0
         }}
+      />
+
+      {/* Heatmap Layer - Renderiza dados no mapa */}
+      <HeatmapLayer 
+        map={mapRef.current}
+        data={climateData}
+        activeVariable={activeVariable}
+      />
+
+      {/* Legenda - Mostra escala de cores */}
+      <MapLegend 
+        activeVariables={climateData ? Object.keys(climateData).filter(key => climateData[key]?.length > 0) : []}
       />
 
     </div>
