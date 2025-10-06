@@ -124,7 +124,7 @@ const App: React.FC = () => {
     <ThemeProvider>
       <ClimateDataProvider>
         <AppContainer>
-          <Header />
+          <Header onOpenDataAnalysis={() => setIsDataModalOpen(true)} />
           <MainContent>
             <MapSection>
               {/* Google Maps - Ocupa todo espaço à esquerda */}

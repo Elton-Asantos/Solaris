@@ -26,7 +26,7 @@ export interface ClimateDataContextType {
   regionStats: RegionStats | null;
   isLoading: boolean;
   fetchClimateData: (lat: number, lon: number, startDate: string, endDate: string, source?: string) => Promise<void>;
-  fetchSatelliteData: (selectedArea: any) => Promise<void>;
+  fetchSatelliteData: (selectedArea: any, variables?: string[], startDate?: string, endDate?: string) => Promise<void>;
   fetchRegionStats: (bounds: any, startDate: string, endDate: string, variables: string[]) => Promise<void>;
   downloadData: (format: string, filename: string) => Promise<void>;
   clearData: () => void;

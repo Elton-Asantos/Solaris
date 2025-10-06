@@ -3,6 +3,10 @@ import styled from 'styled-components';
 import { Sun, Moon } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
+interface HeaderProps {
+  onOpenDataAnalysis?: () => void;
+}
+
 const HeaderContainer = styled.header`
   background: var(--card-background);
   backdrop-filter: blur(10px);
@@ -132,7 +136,7 @@ const ThemeButton = styled.button`
   }
 `;
 
-const Header: React.FC = () => {
+const Header: React.FC<HeaderProps> = ({ onOpenDataAnalysis }) => {
   const { theme, toggleTheme } = useTheme();
 
   return (
@@ -146,7 +150,18 @@ const Header: React.FC = () => {
       
       <NavItems>
         <NavItem href="#selecao">Seleção de Área</NavItem>
-        <NavItem href="#analise">Análise de Dados</NavItem>
+        <NavItem 
+          as="button" 
+          style={{ 
+            background: 'none', 
+            border: 'none', 
+            cursor: 'pointer',
+            font: 'inherit'
+          }}
+          onClick={() => onOpenDataAnalysis && onOpenDataAnalysis()}
+        >
+          Análise de Dados
+        </NavItem>
         
         <StatusBadge>
           <StatusDot />

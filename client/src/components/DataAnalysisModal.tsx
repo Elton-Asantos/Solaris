@@ -116,6 +116,54 @@ const StatCard = styled.div`
   border: 1px solid var(--border-color);
 `;
 
+const PredictionSection = styled.div`
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  color: white;
+`;
+
+const PredictionHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+`;
+
+const PredictionContent = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+`;
+
+const PredictionCard = styled.div`
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+`;
+
+const PredictionTitle = styled.div`
+  font-size: 0.875rem;
+  opacity: 0.9;
+  margin-bottom: 8px;
+`;
+
+const PredictionValue = styled.div`
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+`;
+
+const PredictionSubtext = styled.div`
+  font-size: 0.75rem;
+  opacity: 0.8;
+`;
+
 const StatHeader = styled.div`
   display: flex;
   align-items: center;
@@ -358,6 +406,67 @@ const DataAnalysisModal: React.FC<DataAnalysisModalProps> = ({ isOpen, onClose, 
                     </StatCard>
                   ))}
                 </StatsGrid>
+              )}
+
+              {/* SEÇÃO DE ANÁLISE PREDITIVA */}
+              {regionStats && regionStats.LST && (
+                <PredictionSection>
+                  <PredictionHeader>
+                    🔮 Análise Preditiva - Ilha de Calor
+                  </PredictionHeader>
+                  <PredictionContent>
+                    <PredictionCard>
+                      <PredictionTitle>Risco de Ilha de Calor</PredictionTitle>
+                      <PredictionValue>
+                        {regionStats.LST.mean > 35 ? '🔴 ALTO' : regionStats.LST.mean > 30 ? '🟡 MODERADO' : '🟢 BAIXO'}
+                      </PredictionValue>
+                      <PredictionSubtext>
+                        Baseado em LST médio de {regionStats.LST.mean.toFixed(2)}°C
+                      </PredictionSubtext>
+                    </PredictionCard>
+
+                    <PredictionCard>
+                      <PredictionTitle>Índice de Vegetação</PredictionTitle>
+                      <PredictionValue>
+                        {regionStats.NDVI ? (
+                          regionStats.NDVI.mean < 0.3 ? '🔴 CRÍTICO' : regionStats.NDVI.mean < 0.5 ? '🟡 BAIXO' : '🟢 ADEQUADO'
+                        ) : 'N/A'}
+                      </PredictionValue>
+                      <PredictionSubtext>
+                        {regionStats.NDVI ? `NDVI médio: ${regionStats.NDVI.mean.toFixed(2)}` : 'Dados não disponíveis'}
+                      </PredictionSubtext>
+                    </PredictionCard>
+
+                    <PredictionCard>
+                      <PredictionTitle>Urbanização</PredictionTitle>
+                      <PredictionValue>
+                        {regionStats.NDBI ? (
+                          regionStats.NDBI.mean > 0.3 ? '🔴 ALTA' : regionStats.NDBI.mean > 0.1 ? '🟡 MODERADA' : '🟢 BAIXA'
+                        ) : 'N/A'}
+                      </PredictionValue>
+                      <PredictionSubtext>
+                        {regionStats.NDBI ? `NDBI médio: ${regionStats.NDBI.mean.toFixed(2)}` : 'Dados não disponíveis'}
+                      </PredictionSubtext>
+                    </PredictionCard>
+
+                    <PredictionCard>
+                      <PredictionTitle>Vulnerabilidade Climática</PredictionTitle>
+                      <PredictionValue>
+                        {(() => {
+                          const lstScore = regionStats.LST.mean > 35 ? 3 : regionStats.LST.mean > 30 ? 2 : 1;
+                          const ndviScore = regionStats.NDVI ? (regionStats.NDVI.mean < 0.3 ? 3 : regionStats.NDVI.mean < 0.5 ? 2 : 1) : 2;
+                          const ndbiScore = regionStats.NDBI ? (regionStats.NDBI.mean > 0.3 ? 3 : regionStats.NDBI.mean > 0.1 ? 2 : 1) : 2;
+                          const totalScore = lstScore + ndviScore + ndbiScore;
+                          
+                          return totalScore > 7 ? '🔴 ALTA' : totalScore > 5 ? '🟡 MODERADA' : '🟢 BAIXA';
+                        })()}
+                      </PredictionValue>
+                      <PredictionSubtext>
+                        Análise combinada de temperatura, vegetação e urbanização
+                      </PredictionSubtext>
+                    </PredictionCard>
+                  </PredictionContent>
+                </PredictionSection>
               )}
 
               <TableControls>
