@@ -3,7 +3,6 @@ import styled from 'styled-components';
 import { Calendar, Download, Play, Filter, Settings, Thermometer, Droplets, Sun, TreePine, Building, Users, BarChart2 } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import { useClimateData } from '../context/ClimateDataContext';
-import DataTableModal from './DataTableModal';
 import 'react-datepicker/dist/react-datepicker.css';
 
 interface ControlPanelProps {

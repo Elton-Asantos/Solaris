@@ -3,11 +3,6 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import styled from 'styled-components';
 import Header from './components/Header';
-import MapContainer from './components/MapContainer';
-import MapDebug from './components/MapDebug';
-import MapboxMap from './components/MapboxMap';
-import GoogleMapComponent from './components/GoogleMapComponent';
-// MapDiagnostics removido para economizar espaço
 import MapForceVisible from './components/MapForceVisible';
 import ControlPanel from './components/ControlPanel';
 import LoadingSpinner from './components/LoadingSpinner';
