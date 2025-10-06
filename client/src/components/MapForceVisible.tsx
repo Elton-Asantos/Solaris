@@ -134,7 +134,195 @@ const MapForceVisible: React.FC = () => {
           });
           addStatus('6. ✅ Marcador adicionado!');
         }
-        addStatus('🎉 SUCESSO TOTAL!');
+        addStatus('🎉 MAPA CRIADO COM SUCESSO!');
+
+        // ============================================
+        // DRAWING MANAGER - Ferramentas de Desenho
+        // ============================================
+        addStatus('7. Configurando Drawing Manager...');
+        
+        const drawingManager = new google.maps.drawing.DrawingManager({
+          drawingMode: null, // Inicialmente sem modo ativo
+          drawingControl: true,
+          drawingControlOptions: {
+            position: google.maps.ControlPosition.TOP_CENTER,
+            drawingModes: [
+              google.maps.drawing.OverlayType.MARKER,
+              google.maps.drawing.OverlayType.CIRCLE,
+              google.maps.drawing.OverlayType.RECTANGLE,
+              google.maps.drawing.OverlayType.POLYGON,
+            ],
+          },
+          markerOptions: {
+            draggable: true,
+            icon: {
+              path: google.maps.SymbolPath.CIRCLE,
+              scale: 10,
+              fillColor: '#ff6b6b',
+              fillOpacity: 1,
+              strokeColor: '#fff',
+              strokeWeight: 2,
+            },
+          },
+          circleOptions: {
+            fillColor: '#3b82f6',
+            fillOpacity: 0.3,
+            strokeColor: '#3b82f6',
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            clickable: true,
+            editable: true,
+            zIndex: 1,
+          },
+          rectangleOptions: {
+            fillColor: '#10b981',
+            fillOpacity: 0.3,
+            strokeColor: '#10b981',
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            clickable: true,
+            editable: true,
+            zIndex: 1,
+          },
+          polygonOptions: {
+            fillColor: '#f59e0b',
+            fillOpacity: 0.3,
+            strokeColor: '#f59e0b',
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            clickable: true,
+            editable: true,
+            zIndex: 1,
+          },
+        });
+
+        drawingManager.setMap(map);
+        addStatus('8. ✅ Drawing Manager adicionado!');
+        
+        // Array para armazenar todos os shapes desenhados
+        const allShapes: any[] = [];
+        
+        // Listener para capturar shapes desenhados
+        google.maps.event.addListener(drawingManager, 'overlaycomplete', (event: any) => {
+          // Adicionar shape ao array
+          allShapes.push(event.overlay);
+          const shape = event.overlay;
+          const type = event.type;
+          
+          addStatus(`✏️ Shape desenhado: ${type}`);
+          
+          // Capturar coordenadas baseado no tipo
+          if (type === 'circle') {
+            const center = shape.getCenter();
+            const radius = shape.getRadius();
+            addStatus(`   Centro: ${center.lat().toFixed(4)}, ${center.lng().toFixed(4)}`);
+            addStatus(`   Raio: ${Math.round(radius)}m`);
+            
+            // TODO: Enviar para o ControlPanel
+            console.log('CIRCLE DATA:', {
+              type: 'circle',
+              center: { lat: center.lat(), lng: center.lng() },
+              radius: radius,
+            });
+          } else if (type === 'rectangle') {
+            const bounds = shape.getBounds();
+            const ne = bounds.getNorthEast();
+            const sw = bounds.getSouthWest();
+            addStatus(`   NE: ${ne.lat().toFixed(4)}, ${ne.lng().toFixed(4)}`);
+            addStatus(`   SW: ${sw.lat().toFixed(4)}, ${sw.lng().toFixed(4)}`);
+            
+            console.log('RECTANGLE DATA:', {
+              type: 'rectangle',
+              bounds: {
+                north: ne.lat(),
+                south: sw.lat(),
+                east: ne.lng(),
+                west: sw.lng(),
+              },
+            });
+          } else if (type === 'marker') {
+            const position = shape.getPosition();
+            addStatus(`   Posição: ${position.lat().toFixed(4)}, ${position.lng().toFixed(4)}`);
+            
+            console.log('MARKER DATA:', {
+              type: 'marker',
+              position: { lat: position.lat(), lng: position.lng() },
+            });
+          } else if (type === 'polygon') {
+            const path = shape.getPath();
+            const coordinates: any[] = [];
+            path.forEach((latLng: any) => {
+              coordinates.push({ lat: latLng.lat(), lng: latLng.lng() });
+            });
+            addStatus(`   Polígono com ${coordinates.length} pontos`);
+            
+            console.log('POLYGON DATA:', {
+              type: 'polygon',
+              coordinates: coordinates,
+            });
+          }
+          
+          addStatus('💾 Coordenadas capturadas!');
+        });
+        
+        addStatus('🎉 DESENHO HABILITADO!');
+        
+        // ============================================
+        // BOTÃO CUSTOMIZADO: LIMPAR SELEÇÃO
+        // ============================================
+        const clearButtonDiv = document.createElement('div');
+        clearButtonDiv.style.margin = '10px 0 10px 10px'; // Alinhado com a barra
+        clearButtonDiv.style.display = 'inline-block';
+        
+        const clearButton = document.createElement('button');
+        clearButton.innerHTML = '🗑️ Limpar';
+        clearButton.style.backgroundColor = '#ef4444';
+        clearButton.style.color = 'white';
+        clearButton.style.border = 'none';
+        clearButton.style.borderRadius = '2px'; // Mesmo estilo do Google Maps
+        clearButton.style.padding = '6px 12px'; // Menor, igual às ferramentas
+        clearButton.style.fontSize = '13px';
+        clearButton.style.fontWeight = '500';
+        clearButton.style.cursor = 'pointer';
+        clearButton.style.boxShadow = 'rgba(0, 0, 0, 0.3) 0px 1px 4px -1px';
+        clearButton.style.transition = 'all 0.2s ease';
+        clearButton.style.height = '40px'; // Mesma altura da barra do Google Maps
+        clearButton.style.lineHeight = '1';
+        clearButton.title = 'Remover todos os desenhos do mapa';
+        
+        clearButton.addEventListener('mouseover', () => {
+          clearButton.style.backgroundColor = '#dc2626';
+          clearButton.style.transform = 'translateY(-2px)';
+          clearButton.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.4)';
+        });
+        
+        clearButton.addEventListener('mouseout', () => {
+          clearButton.style.backgroundColor = '#ef4444';
+          clearButton.style.transform = 'translateY(0)';
+          clearButton.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
+        });
+        
+        clearButton.addEventListener('click', () => {
+          // Remover todos os shapes do mapa
+          allShapes.forEach((shape) => {
+            shape.setMap(null);
+          });
+          
+          // Limpar array
+          allShapes.length = 0;
+          
+          // Resetar drawing mode
+          drawingManager.setDrawingMode(null);
+          
+          addStatus('🗑️ Todos os desenhos foram removidos!');
+          console.log('CLEARED: Todos os shapes foram removidos');
+        });
+        
+        clearButtonDiv.appendChild(clearButton);
+        
+        // Adicionar botão ao mapa (TOP_CENTER, ao lado das ferramentas de desenho)
+        map.controls[google.maps.ControlPosition.TOP_CENTER].push(clearButtonDiv);
+        addStatus('9. ✅ Botão "Limpar" adicionado ao lado das ferramentas!');
 
         mapRef.current = map;
 
