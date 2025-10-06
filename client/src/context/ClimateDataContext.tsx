@@ -106,16 +106,28 @@ export const ClimateDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
         endDate: endDate || defaultEndDate
       };
       
-      // Adicionar coords ou bounds
-      if (selectedArea.center) {
-        // Área de círculo ou ponto
+      // Adicionar coords ou bounds baseado no tipo de área
+      const areaData = selectedArea.bounds;
+      
+      if (areaData.type === 'circle') {
+        // Área de círculo
         payload.coords = {
-          lat: selectedArea.center.lat,
-          lng: selectedArea.center.lng
+          lat: areaData.center.lat,
+          lng: areaData.center.lng
         };
-      } else if (selectedArea.bounds) {
+        payload.radius = areaData.radius; // Raio em metros
+      } else if (areaData.type === 'marker') {
+        // Ponto único
+        payload.coords = {
+          lat: areaData.position.lat,
+          lng: areaData.position.lng
+        };
+      } else if (areaData.type === 'rectangle') {
         // Área retangular
-        payload.bounds = selectedArea.bounds;
+        payload.bounds = areaData.bounds;
+      } else if (areaData.type === 'polygon') {
+        // Polígono
+        payload.polygon = areaData.coordinates;
       }
       
       console.log('📡 Enviando para backend:', payload);

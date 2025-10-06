@@ -104,9 +104,12 @@ async def fetch_satellite_data(params: Dict = Body(...)):
         
         # Buscar dados do GEE
         logger.info(f"Buscando dados do GEE para: {variables}")
+        radius = params.get("radius")  # Raio em metros (para círculos)
+        
         data = await get_multiple_variables(
             coords=coords,
             bounds=bounds,
+            radius=radius,
             start_date=start_date,
             end_date=end_date,
             variables=variables

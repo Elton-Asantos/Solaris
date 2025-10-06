@@ -276,6 +276,7 @@ def get_unit(variable: str) -> str:
 
 async def get_satellite_data(coords: Optional[Dict] = None, 
                              bounds: Optional[Dict] = None,
+                             radius: Optional[float] = None,
                              variable: str = "LST",
                              start_date: Optional[str] = None,
                              end_date: Optional[str] = None) -> Dict:
@@ -293,14 +294,19 @@ async def get_satellite_data(coords: Optional[Dict] = None,
     
     # Criar geometria
     if coords:
-        # Ponto com buffer de 5km
-        geometry = ee.Geometry.Point([coords['lng'], coords['lat']]).buffer(5000)
+        # Ponto ou círculo com raio especificado
+        buffer_radius = radius if radius else 5000  # Default 5km
+        # Limitar raio máximo para evitar timeout
+        buffer_radius = min(buffer_radius, 50000)  # Max 50km
+        geometry = ee.Geometry.Point([coords['lng'], coords['lat']]).buffer(buffer_radius)
+        logger.info(f"Geometria: Ponto com buffer de {buffer_radius}m")
     elif bounds:
         # Retângulo
         geometry = ee.Geometry.Rectangle([
             bounds['west'], bounds['south'],
             bounds['east'], bounds['north']
         ])
+        logger.info(f"Geometria: Retângulo")
     else:
         raise ValueError("Forneça coords ou bounds")
     
@@ -319,6 +325,7 @@ async def get_satellite_data(coords: Optional[Dict] = None,
 
 async def get_multiple_variables(coords: Optional[Dict] = None,
                                  bounds: Optional[Dict] = None,
+                                 radius: Optional[float] = None,
                                  start_date: Optional[str] = None,
                                  end_date: Optional[str] = None,
                                  variables: List[str] = None) -> Dict:
@@ -335,6 +342,7 @@ async def get_multiple_variables(coords: Optional[Dict] = None,
         data = await get_satellite_data(
             coords=coords,
             bounds=bounds,
+            radius=radius,
             variable=variable,
             start_date=start_date,
             end_date=end_date
